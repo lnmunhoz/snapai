@@ -35,7 +35,7 @@ function isStyleDangerous(style?: string): boolean {
 
 export default class IconCommand extends Command {
   static description =
-    "Generate AI-powered app icons using OpenAI (gpt-1.5/gpt-1) or Gemini (banana)";
+    "Generate AI-powered app icons using OpenAI (gpt-1.5/gpt-1) or Gemini (banana / banana 2)";
 
   static examples = [
     // Basic usage
@@ -47,6 +47,8 @@ export default class IconCommand extends Command {
     "",
     // Gemini
     '<%= config.bin %> <%= command.id %> --prompt "modern app icon" --model banana',
+    '<%= config.bin %> <%= command.id %> --prompt "app icon" --model "banana 2"',
+    '<%= config.bin %> <%= command.id %> --prompt "app icon" --model "banana 2" --thinking max',
     "",
     // Advanced options
     '<%= config.bin %> <%= command.id %> --prompt "logo" --model gpt-1.5 --background transparent --output-format png',
@@ -105,9 +107,9 @@ export default class IconCommand extends Command {
     model: Flags.string({
       char: "m",
       description:
-        'Model: OpenAI ("gpt-1.5" or "gpt-1") or Gemini ("banana"). (Legacy alias: "gpt")',
+        'Model: OpenAI ("gpt-1.5" or "gpt-1") or Gemini ("banana" or "banana 2"). (Legacy alias: "gpt")',
       default: "gpt-1.5",
-      options: ["gpt-1.5", "gpt-1", "banana", "gpt"],
+      options: ["gpt-1.5", "gpt-1", "banana", "banana 2", "gpt"],
     }),
     quality: Flags.string({
       char: "q",
@@ -189,6 +191,11 @@ export default class IconCommand extends Command {
       min: 1,
       max: 10,
     }),
+    thinking: Flags.string({
+      description:
+        'Thinking level for banana 2: minimal (faster, less reasoning) or max (deeper reasoning). Ignored for other models.',
+      options: ["minimal", "max"],
+    }),
   };
 
   private normalizeFlagString(input: unknown, fallback: string): string {
@@ -247,13 +254,27 @@ export default class IconCommand extends Command {
           ? "gpt-1.5"
           : modelFlag;
       const provider: "banana" | "openai" =
-        normalizedModelFlag === "banana" ? "banana" : "openai";
+        normalizedModelFlag === "banana" || normalizedModelFlag === "banana 2"
+          ? "banana"
+          : "openai";
+      const bananaVariant: "banana" | "banana 2" | undefined =
+        normalizedModelFlag === "banana 2"
+          ? "banana 2"
+          : normalizedModelFlag === "banana"
+            ? "banana"
+            : undefined;
       const openaiModel =
         provider === "openai"
           ? (normalizedModelFlag as "gpt-1" | "gpt-1.5" | "gpt")
           : undefined;
 
       const qualityInput = this.normalizeFlagString(flags.quality, "auto");
+
+      if (flags.thinking && bananaVariant !== "banana 2") {
+        this.error(
+          chalk.red('--thinking is only supported with --model "banana 2"')
+        );
+      }
 
       const openaiApiKey = flags["openai-api-key"] || flags["api-key"];
       if (flags["openai-api-key"] && flags["api-key"]) {
@@ -301,7 +322,11 @@ export default class IconCommand extends Command {
 
         // Provider-specific validation (so preview matches reality), but do not prompt for confirmation.
         if (provider === "banana") {
-          if (!flags.pro) {
+          if (bananaVariant === "banana 2") {
+            if (requestedN !== 1) {
+              this.error(chalk.red("Banana 2 only supports -n 1"));
+            }
+          } else if (!flags.pro) {
             if (requestedN !== 1) {
               this.error(chalk.red("Banana normal only supports -n 1"));
             }
@@ -355,13 +380,20 @@ export default class IconCommand extends Command {
         this.log(chalk.gray(`  size: 1024x1024 (fixed)`));
         this.log(chalk.gray(`  n: ${requestedN}`));
         if (provider === "banana") {
-          const bananaQualityResolved = this.resolveBananaQuality(qualityInput);
-          this.log(
-            chalk.gray(
-              `  quality: ${qualityInput} (resolved: ${bananaQualityResolved})`
-            )
-          );
-          this.log(chalk.gray(`  pro: ${flags.pro ? "yes" : "no"}`));
+          if (bananaVariant === "banana 2") {
+            this.log(chalk.gray(`  variant: banana 2 (nano banana 2)`));
+            if (flags.thinking) {
+              this.log(chalk.gray(`  thinking: ${flags.thinking}`));
+            }
+          } else {
+            const bananaQualityResolved = this.resolveBananaQuality(qualityInput);
+            this.log(
+              chalk.gray(
+                `  quality: ${qualityInput} (resolved: ${bananaQualityResolved})`
+              )
+            );
+            this.log(chalk.gray(`  pro: ${flags.pro ? "yes" : "no"}`));
+          }
           if (flags.pro && requestedN >= 5) {
             this.log(
               chalk.yellow(
@@ -395,20 +427,12 @@ export default class IconCommand extends Command {
         return;
       }
 
-      this.log(chalk.blue("🎨 Generating your app icon..."));
-      this.log("");
-      this.log(CTA);
-      this.log("");
-      this.log(chalk.gray(`Prompt: ${flags.prompt}`));
-      if (flags.style) {
-        this.log(chalk.blue(`🎨 Style: ${flags.style}`));
-      }
-      if (flags["raw-prompt"]) {
-        this.log(chalk.yellow("⚠️  Using raw prompt (no style enhancement)"));
-      }
-
       if (provider === "banana") {
-        if (!flags.pro) {
+        if (bananaVariant === "banana 2") {
+          if (requestedN !== 1) {
+            this.error(chalk.red("Banana 2 only supports -n 1"));
+          }
+        } else if (!flags.pro) {
           if (requestedN !== 1) {
             this.error(chalk.red("Banana normal only supports -n 1"));
           }
@@ -425,14 +449,34 @@ export default class IconCommand extends Command {
             }
           }
         }
+      }
 
+      this.log(chalk.blue("🎨 Generating your app icon..."));
+      this.log("");
+      this.log(CTA);
+      this.log("");
+      this.log(chalk.gray(`Prompt: ${flags.prompt}`));
+      if (flags.style) {
+        this.log(chalk.blue(`🎨 Style: ${flags.style}`));
+      }
+      if (flags["raw-prompt"]) {
+        this.log(chalk.yellow("⚠️  Using raw prompt (no style enhancement)"));
+      }
+
+      if (provider === "banana") {
         const bananaQuality = this.resolveBananaQuality(qualityInput);
+        const thinkingLevel =
+          bananaVariant === "banana 2" && flags.thinking
+            ? (flags.thinking as "minimal" | "max")
+            : undefined;
         const images = await GeminiService.generateBananaImages({
           prompt: finalPrompt,
           pro: flags.pro,
-          n: flags.pro ? requestedN : 1,
+          n: bananaVariant === "banana 2" ? 1 : flags.pro ? requestedN : 1,
           quality: bananaQuality,
           apiKey: flags["google-api-key"],
+          modelVariant: bananaVariant,
+          thinkingLevel,
         });
 
         const outputPaths = await this.saveBinaryImages(images, flags.output);

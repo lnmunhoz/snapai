@@ -69,12 +69,13 @@ Output defaults to `./assets` (timestamped filenames).
 
 SnapAI exposes providers via `--model`:
 
-| Provider                    | SnapAI flag            | Underlying model             | Notes                                                     |
-| --------------------------- | ---------------------- | ---------------------------- | --------------------------------------------------------- |
-| OpenAI (latest)             | `--model gpt-1.5`      | `gpt-image-1.5`              | Always 1:1 square `1024x1024`, background/output controls |
-| OpenAI (previous)           | `--model gpt-1`        | `gpt-image-1`                | Same controls as above                                    |
-| Google Nano Banana (normal) | `--model banana`       | `gemini-2.5-flash-image`     | Always 1 image, square output                             |
-| Google Nano Banana (pro)    | `--model banana --pro` | `gemini-3-pro-image-preview` | Quality tiers via `--quality 1k/2k/4k`, multiple via `-n` |
+| Provider                    | SnapAI flag              | Underlying model                   | Notes                                                     |
+| --------------------------- | ------------------------ | ---------------------------------- | --------------------------------------------------------- |
+| OpenAI (latest)             | `--model gpt-1.5`        | `gpt-image-1.5`                    | Always 1:1 square `1024x1024`, background/output controls |
+| OpenAI (previous)           | `--model gpt-1`          | `gpt-image-1`                      | Same controls as above                                    |
+| Google Nano Banana (normal) | `--model banana`         | `gemini-2.5-flash-image`           | Always 1 image, square output                             |
+| Google Nano Banana 2        | `--model "banana 2"`     | `gemini-3.1-flash-image-preview`   | 1 image, thinking config, 1K output                      |
+| Google Nano Banana (pro)    | `--model banana --pro`   | `gemini-3-pro-image-preview`       | Quality tiers via `--quality 1k/2k/4k`, multiple via `-n` |
 
 > **Tip** 💡  
 > If you want **multiple variations** quickly, use **OpenAI** (`-n`) or **Banana Pro** (`--pro -n ...`).
