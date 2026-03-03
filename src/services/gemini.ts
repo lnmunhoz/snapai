@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import mime from "mime";
 import { ConfigService } from "./config.js";
 
-export type BananaModel = "banana" | "banana 2";
+export type BananaModel = "banana" | "banana-2";
 export type BananaQuality = "1k" | "2k" | "4k";
 
 /** CLI values for banana 2 thinking level; maps to ThinkingLevel in the API. */
@@ -14,9 +14,9 @@ export interface BananaGenerateOptions {
   n: number;
   quality: BananaQuality;
   apiKey?: string;
-  /** When set to "banana 2", uses nano banana 2 (gemini-3.1-flash-image-preview) with thinking config. */
+  /** When set to "banana-2", uses nano banana 2 (gemini-3.1-flash-image-preview) with thinking config. */
   modelVariant?: BananaModel;
-  /** Only used when modelVariant is "banana 2". Sent as thinkingConfig.thinkingLevel (MINIMAL | HIGH). */
+  /** Only used when modelVariant is "banana-2". Sent as thinkingConfig.thinkingLevel (MINIMAL | HIGH). */
   thinkingLevel?: Banana2ThinkingLevel;
 }
 
@@ -75,14 +75,14 @@ export class GeminiService {
     const ai = await this.getClient(options.apiKey);
     const { prompt, pro, n, quality, modelVariant } = options;
 
-    if (modelVariant === "banana 2") {
+    if (modelVariant === "banana-2") {
       return await this.generateStream(
         ai,
         BANANA_2_MODEL,
         prompt,
         1,
         undefined,
-        "banana 2",
+        "banana-2",
         options.thinkingLevel
       );
     }
@@ -124,14 +124,14 @@ export class GeminiService {
     prompt: string,
     desired: number,
     quality?: BananaQuality,
-    variant?: "banana 2",
+    variant?: "banana-2",
     thinkingLevel?: Banana2ThinkingLevel
   ): Promise<GeneratedBinaryImage[]> {
     const config: any = {
       responseModalities: ["IMAGE", "TEXT"],
     };
 
-    if (variant === "banana 2") {
+    if (variant === "banana-2") {
       config.imageConfig = { imageSize: "1K" };
       const level = this.mapThinkingLevel(thinkingLevel);
       if (level !== undefined) {
