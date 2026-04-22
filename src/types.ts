@@ -14,7 +14,7 @@ export interface IconGenerationOptions {
    * CLI model alias.
    * Internally, SnapAI maps this to the provider's underlying model ID.
    */
-  model?: 'gpt-1' | 'gpt-1.5' | 'gpt';
+  model?: 'gpt-1' | 'gpt-1.5' | 'gpt-image-2' | 'gpt';
   numImages?: number;
   moderation?: 'low' | 'auto';
   rawPrompt?: boolean;

@@ -9,11 +9,13 @@ export class OpenAIService {
    *
    * - gpt-1.5: current default
    * - gpt-1: previous generation
+   * - gpt-image-2: OpenAI GPT Image 2
    */
   private static readonly OPENAI_IMAGE_MODEL_ID_BY_ALIAS: Record<string, string> =
     {
       "gpt-1": "gpt-image-1",
       "gpt-1.5": "gpt-image-1.5",
+      "gpt-image-2": "gpt-image-2",
     };
   private static readonly FIXED_SIZE = "1024x1024";
 
@@ -101,7 +103,7 @@ export class OpenAIService {
     outputFormat: string,
     moderation: string
   ): void {
-    this.resolveOpenAIImageModelId(model);
+    const resolvedId = this.resolveOpenAIImageModelId(model);
 
     const validQualities = ["auto", "high", "medium", "low"];
     if (!validQualities.includes(quality)) {
@@ -118,6 +120,12 @@ export class OpenAIService {
 
     if (!["transparent", "opaque", "auto"].includes(background)) {
       throw new Error(`Invalid background "${background}"`);
+    }
+
+    if (resolvedId === "gpt-image-2" && background === "transparent") {
+      throw new Error(
+        'Model "gpt-image-2" does not support transparent backgrounds. Use "opaque" or "auto".'
+      );
     }
     if (!["png", "jpeg", "webp"].includes(outputFormat)) {
       throw new Error(`Invalid output format "${outputFormat}"`);

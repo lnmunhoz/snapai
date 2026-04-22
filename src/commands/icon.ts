@@ -35,7 +35,7 @@ function isStyleDangerous(style?: string): boolean {
 
 export default class IconCommand extends Command {
   static description =
-    "Generate AI-powered app icons using OpenAI (gpt-1.5/gpt-1) or Gemini (banana / banana-2)";
+    "Generate AI-powered app icons using OpenAI (gpt-1.5/gpt-1/gpt-image-2) or Gemini (banana / banana-2)";
 
   static examples = [
     // Basic usage
@@ -107,9 +107,9 @@ export default class IconCommand extends Command {
     model: Flags.string({
       char: "m",
       description:
-        'Model: OpenAI ("gpt-1.5" or "gpt-1") or Gemini ("banana" or "banana-2"). (Legacy alias: "gpt")',
+        'Model: OpenAI ("gpt-1.5", "gpt-1", or "gpt-image-2") or Gemini ("banana" or "banana-2"). (Legacy alias: "gpt")',
       default: "gpt-1.5",
-      options: ["gpt-1.5", "gpt-1", "banana", "banana-2", "gpt"],
+      options: ["gpt-1.5", "gpt-1", "gpt-image-2", "banana", "banana-2", "gpt"],
     }),
     quality: Flags.string({
       char: "q",
@@ -265,7 +265,11 @@ export default class IconCommand extends Command {
             : undefined;
       const openaiModel =
         provider === "openai"
-          ? (normalizedModelFlag as "gpt-1" | "gpt-1.5" | "gpt")
+          ? (normalizedModelFlag as
+              | "gpt-1"
+              | "gpt-1.5"
+              | "gpt-image-2"
+              | "gpt")
           : undefined;
 
       const qualityInput = this.normalizeFlagString(flags.quality, "auto");

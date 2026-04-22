@@ -6,8 +6,8 @@ Generate high-quality **square app icon artwork** from the terminal — built fo
 
 SnapAI is a developer-friendly CLI that talks directly to:
 
-- **OpenAI Images** (`gpt-1.5` → `gpt-image-1.5`, `gpt-1` → `gpt-image-1`)
-- **Google Nano Banana** _(Gemini image models)_ — selected via `--model banana`
+- **OpenAI Images** (`gpt-1.5` → `gpt-image-1.5`, `gpt-1` → `gpt-image-1`, `gpt-image-2` → `gpt-image-2`)
+- **Google Nano Banana** _(Gemini image models)_ — selected via `--model banana` or `--model banana-2`
 
 The workflow is intentionally **square-only**: **always `1024x1024` (1:1)** to match iOS/Android icon needs and avoid resizing headaches.
 
@@ -18,6 +18,7 @@ The workflow is intentionally **square-only**: **always `1024x1024` (1:1)** to m
   - OpenAI:
     - `gpt-1.5` _(uses `gpt-image-1.5` under the hood)_
     - `gpt-1` _(uses `gpt-image-1` under the hood)_
+    - `gpt-image-2` _(OpenAI GPT Image 2; same Image API path as above)_
   - Google Nano Banana (Gemini):
     - normal: `gemini-2.5-flash-image`
     - pro: `gemini-3-pro-image-preview`
@@ -47,7 +48,7 @@ npm install -g snapai
 > **Important** 🔑  
 > You need **at least one** API key:
 >
-> - **OpenAI** (for `gpt-1.5` → `gpt-image-1.5`, `gpt-1` → `gpt-image-1`)
+> - **OpenAI** (for `gpt-1.5` → `gpt-image-1.5`, `gpt-1` → `gpt-image-1`, `gpt-image-2` → `gpt-image-2`)
 > - **Google AI Studio** (for Google Nano Banana / Gemini via `--model banana`)
 >
 > SnapAI is **CLI-only** and sends requests **directly** to the provider you select.
@@ -73,6 +74,7 @@ SnapAI exposes providers via `--model`:
 | --------------------------- | ------------------------ | ---------------------------------- | --------------------------------------------------------- |
 | OpenAI (latest)             | `--model gpt-1.5`        | `gpt-image-1.5`                    | Always 1:1 square `1024x1024`, background/output controls |
 | OpenAI (previous)           | `--model gpt-1`          | `gpt-image-1`                      | Same controls as above                                    |
+| OpenAI (GPT Image 2)        | `--model gpt-image-2`    | `gpt-image-2`                      | Same size/quality/format/moderation flags; **`--background transparent` is not supported** (use `opaque` or `auto`) |
 | Google Nano Banana (normal) | `--model banana`         | `gemini-2.5-flash-image`           | Always 1 image, square output                             |
 | Google Nano Banana 2        | `--model banana-2`       | `gemini-3.1-flash-image-preview`   | 1 image, thinking config, 1K output                      |
 | Google Nano Banana (pro)    | `--model banana --pro`   | `gemini-3-pro-image-preview`       | Quality tiers via `--quality 1k/2k/4k`, multiple via `-n` |
@@ -142,7 +144,7 @@ npx snapai icon --prompt "calculator app" --prompt-only
 npx snapai icon --prompt "calculator app" --style minimalism --prompt-only
 ```
 
-### OpenAI (`gpt-1.5` / `gpt-1`)
+### OpenAI (`gpt-1.5` / `gpt-1` / `gpt-image-2`)
 
 ```bash
 # Multiple variations
@@ -151,8 +153,11 @@ npx snapai icon --prompt "app icon concept" --model gpt-1.5 -n 3
 # Higher quality
 npx snapai icon --prompt "premium app icon" --quality high
 
-# Transparent background + output format
-npx snapai icon --prompt "logo mark" --background transparent --output-format png
+# GPT Image 2 (same CLI; transparent background is rejected — use opaque or auto)
+npx snapai icon --prompt "minimal 3D star icon, soft glossy plastic" --model gpt-image-2
+
+# Transparent background + output format (gpt-1.5 / gpt-1 only — not gpt-image-2)
+npx snapai icon --prompt "logo mark" --model gpt-1.5 --background transparent --output-format png
 ```
 
 ### Google Gemini (`gemini-2.5-flash-image / gemini-3-pro-image-preview`)
@@ -191,9 +196,9 @@ Nano Banana notes:
 | ------------------ | ----- | ---------- | --------------------------------------------------------------------------------- |
 | `--prompt`         | `-p`  | required   | Description of the icon to generate                                               |
 | `--output`         | `-o`  | `./assets` | Output directory                                                                  |
-| `--model`          | `-m`  | `gpt-1.5`  | `gpt-1.5`/`gpt-1` (OpenAI) or `banana` (Google Nano Banana)                       |
+| `--model`          | `-m`  | `gpt-1.5`  | `gpt-1.5`/`gpt-1`/`gpt-image-2` (OpenAI) or `banana` / `banana-2` (Google Nano Banana) |
 | `--quality`        | `-q`  | `auto`     | GPT: `auto/high/medium/low` (aliases: `hd`, `standard`). Banana Pro: `1k/2k/4k`   |
-| `--background`     | `-b`  | `auto`     | Background (`transparent`, `opaque`, `auto`) (OpenAI only)                        |
+| `--background`     | `-b`  | `auto`     | Background (`transparent`, `opaque`, `auto`) (OpenAI only; **`transparent` invalid for `gpt-image-2`**) |
 | `--output-format`  | `-f`  | `png`      | Output format (`png`, `jpeg`, `webp`) (OpenAI only)                               |
 | `--n`              | `-n`  | `1`        | Number of images (max 10). For Banana normal, must be `1`.                        |
 | `--moderation`     |       | `auto`     | Content filtering (`low`, `auto`) (OpenAI only)                                   |
@@ -217,6 +222,11 @@ Nano Banana notes:
 | `camera app, lens icon, simple concentric circles`                      | ![Camera Icon](<test-icons/npx snapai icon --prompt "camera app, lens icon, simple concentric circles" --model banana.webp>)                                  | `npx snapai icon --prompt "camera app, lens icon, simple concentric circles" --model banana`                            |
 | `finance app, secure lock, clean illustration, bold silhouette`         | ![Finance Lock Icon](<test-icons/npx snapai icon --prompt "finance app, secure lock, clean illustration, bold silhouette" --model banana --pro.webp>)         | `npx snapai icon --prompt "finance app, secure lock, clean illustration, bold silhouette" --model banana --pro`         |
 | `photo editor app, magic wand + spark, simple shapes, modern gradients` | ![Photo Editor Icon](<test-icons/npx snapai icon --prompt "photo editor app, magic wand + spark, simple shapes, modern gradients" --model banana --pro.webp>) | `npx snapai icon --prompt "photo editor app, magic wand + spark, simple shapes, modern gradients" --model banana --pro` |
+| `Minimal 3D star icon, soft glossy plastic, clean lighting, centered, square, no text` | ![GPT Image 2 star](<test-icons/gpt-image-2/Minimal 3D star icon, soft glossy plastic, clean lighting, centered, square, no text.webp>) | `npx snapai icon --prompt "Minimal 3D star icon, soft glossy plastic, clean lighting, centered, square, no text" --model gpt-image-2` |
+| `Single smooth 3D pebble shape, subtle shine, pastel gradient, lots of empty space, app icon` | ![GPT Image 2 pebble](<test-icons/gpt-image-2/Single smooth 3D pebble shape, subtle shine, pastel gradient, lots of empty space, app icon.webp>) | `npx snapai icon --prompt "Single smooth 3D pebble shape, subtle shine, pastel gradient, lots of empty space, app icon" --model gpt-image-2` |
+| `Tiny 3D crystal gem, faceted, glassy highlights, minimal, centered on plain background` | ![GPT Image 2 gem](<test-icons/gpt-image-2/Tiny 3D crystal gem, faceted, glassy highlights, minimal, centered on plain background.webp>) | `npx snapai icon --prompt "Tiny 3D crystal gem, faceted, glassy highlights, minimal, centered on plain background" --model gpt-image-2` |
+| `One rounded 3D cube, isometric, soft shadows, matte-gloss mix, very simple composition` | ![GPT Image 2 cube](<test-icons/gpt-image-2/One rounded 3D cube, isometric, soft shadows, matte-gloss mix, very simple composition.webp>) | `npx snapai icon --prompt "One rounded 3D cube, isometric, soft shadows, matte-gloss mix, very simple composition" --model gpt-image-2` |
+| `Minimal 3D ring or orbit shape, metallic sheen, floating in space, clean and calm` | ![GPT Image 2 orbit](<test-icons/gpt-image-2/Minimal 3D ring or orbit shape, metallic sheen, floating in space, clean and calm.webp>) | `npx snapai icon --prompt "Minimal 3D ring or orbit shape, metallic sheen, floating in space, clean and calm" --model gpt-image-2` |
 
 ## Built by Code with Beto 👋
 
